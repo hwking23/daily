@@ -31,17 +31,35 @@ if template_id is None:
   print('请设置 TEMPLATE_ID')
   exit(422)
 
+if city is None or weather_apikey is None:
+  print('没有城市行政区域编码或者apikey')
+  city_id = None
+else:
+  city_idurl = f"https://geoapi.qweather.com/v2/city/lookup?location={city}&key={wai}"
+  city_data = json.loads(requests.get(city_idurl).content.decode('utf-8'))['location'][0]
+  city_id = city_data.get("id")
+  city_name = city_data.get('name')
+
 # weather 直接返回对象，在使用的地方用字段进行调用。
 def get_weather():
-  if city is None:
-    print('请设置城市')
+  
+  if city_id is None:
     return None
-  url = "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city=" + city
-  res = requests.get(url).json()
-  if res is None:
-    return None
-  weather = res['data']['list'][0]
+  weatherurl = f"https://devapi.qweather.com/v7/weather/3d?location={city_id}&key={wai}&lang=zh"
+  weather = json.loads(requests.get(weatherurl).content.decode('utf-8'))["daily"][0]
   return weather
+#   res = requests.get(url).json()
+#   if res is None:
+#     return None
+#   weather = res['data']['list'][0]
+#   return weather
+
+def get_realtimeweather():
+  if city_id is None:
+    return None
+  realtimeweatherurl = f"https://devapi.qweather.com/v7/weather/now?location={city_id}&key={wai}&lang=zh"
+  realtimeweather = json.loads(requests.get(realtimeweatherurl).content.decode('utf-8'))["now"]["temp"]
+  return realtimeweather
 
 # 获取当前日期为星期几
 def get_week_day():
